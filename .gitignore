@@ -1,0 +1,31 @@
+# Java / Maven
+**/target/
+**/build/
+**/.mvn/wrapper/maven-wrapper.jar
+.maven-cache/
+
+# Node / Vite
+**/node_modules/
+**/dist/
+npm-debug.log*
+
+# IDE and workspace metadata
+.metadata/
+.idea/
+.vscode/
+**/.settings/
+**/.classpath
+**/.project
+*.iml
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Logs and OS files
+*.log
+.DS_Store
+Thumbs.db

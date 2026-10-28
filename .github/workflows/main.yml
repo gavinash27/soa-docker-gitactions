@@ -1,0 +1,117 @@
+name: BusPass CI and Docker Hub
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Build backend
+        working-directory: backend
+        run: chmod +x mvnw && ./mvnw -B verify
+
+      - name: Build Eureka Server
+        working-directory: EurekaServer/EurekaServer
+        run: chmod +x mvnw && ./mvnw -B verify
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/frontend-react/package-lock.json
+
+      - name: Build frontend
+        working-directory: frontend/frontend-react
+        run: npm ci && npm run build
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Validate Compose configuration
+        run: docker compose config --quiet
+
+      - name: Build backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+
+      - name: Build Eureka image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./EurekaServer/EurekaServer
+          file: ./EurekaServer/EurekaServer/Dockerfile
+          push: false
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: false
+
+  publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Publish backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/buspass-backend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/buspass-backend:${{ github.sha }}
+
+      - name: Publish Eureka image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./EurekaServer/EurekaServer
+          file: ./EurekaServer/EurekaServer/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/buspass-eureka:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/buspass-eureka:${{ github.sha }}
+
+      - name: Publish frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/buspass-frontend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/buspass-frontend:${{ github.sha }}

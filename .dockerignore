@@ -1,0 +1,9 @@
+.git
+.metadata
+**/target
+**/node_modules
+**/dist
+**/.settings
+**/.classpath
+**/.project
+*.log
