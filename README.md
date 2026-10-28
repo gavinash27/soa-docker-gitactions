@@ -26,7 +26,7 @@ Defaults from `.env.example`:
 - Swagger UI: <http://localhost:3001/swagger-ui/index.html> (also available at <http://localhost:8082/swagger-ui/index.html>)
 - PostgreSQL host port: `5433`
 
-The Nginx frontend proxies `/BusPass`, `/v3/api-docs`, and `/swagger-ui/` to the backend service. The Vite development proxy remains configured for `http://localhost:8081`.
+The React/Vite app in `frontend-react/` is served by Nginx, which proxies `/BusPass`, `/v3/api-docs`, and `/swagger-ui/` to the backend service. The Vite development proxy remains configured for `http://localhost:8081`.
 
 ## Images and GitHub Actions
 
@@ -41,5 +41,5 @@ Images published by the workflow (replace `<dockerhub-username>` with the Docker
 
 ```powershell
 cd backend; .\mvnw.cmd -B verify; cd ..
-cd frontend\frontend-react; npm ci; npm run build; cd ..\..
+cd frontend-react; npm ci; npm run build; cd ..
 ```

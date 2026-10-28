@@ -1,25 +1,18 @@
-
 name: SOATaskWorkspace Docker CI/CD
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 permissions:
   contents: read
 
 jobs:
-  build-and-push:
+  validate:
     runs-on: ubuntu-latest
-
     steps:
-<<<<<<< HEAD
-      - name: Checkout source code
-=======
       - name: Check out repository
         uses: actions/checkout@v4
 
@@ -39,10 +32,10 @@ jobs:
         with:
           node-version: '20'
           cache: npm
-          cache-dependency-path: frontend/frontend-react/package-lock.json
+          cache-dependency-path: frontend-react/package-lock.json
 
       - name: Build frontend
-        working-directory: frontend/frontend-react
+        working-directory: frontend-react
         run: npm ci && npm run build
 
       - name: Set up Docker Buildx
@@ -61,7 +54,7 @@ jobs:
       - name: Build frontend image
         uses: docker/build-push-action@v6
         with:
-          context: ./frontend
+          context: ./frontend-react
           file: Dockerfile
           push: false
 
@@ -71,62 +64,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
->>>>>>> 773c4d7 (Remove Eureka Server and simplify Docker deployment)
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to Docker Hub
-        if: github.event_name == 'push'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push backend image
+      - name: Publish backend image
         uses: docker/build-push-action@v6
         with:
           context: ./backend
-<<<<<<< HEAD
-          file: ./backend/Dockerfile
-          push: ${{ github.event_name == 'push' }}
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME || 'local' }}/soataskworkspace-backend:latest
-            ${{ secrets.DOCKERHUB_USERNAME || 'local' }}/soataskworkspace-backend:${{ github.sha }}
-
-      - name: Build and push Eureka Server image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./EurekaServer/EurekaServer
-          file: ./EurekaServer/EurekaServer/eureka.Dockerfile
-          push: ${{ github.event_name == 'push' }}
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME || 'local' }}/soataskworkspace-eureka:latest
-            ${{ secrets.DOCKERHUB_USERNAME || 'local' }}/soataskworkspace-eureka:${{ github.sha }}
-=======
           file: Dockerfile
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/soataskworkspace-backend:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/soataskworkspace-backend:${{ github.sha }}
->>>>>>> 773c4d7 (Remove Eureka Server and simplify Docker deployment)
 
-      - name: Build and push frontend image
+      - name: Publish frontend image
         uses: docker/build-push-action@v6
         with:
-<<<<<<< HEAD
-          context: ./frontend/frontend-react
-          file: ./frontend/frontend-react/Dockerfile
-          push: ${{ github.event_name == 'push' }}
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME || 'local' }}/soataskworkspace-frontend:latest
-            ${{ secrets.DOCKERHUB_USERNAME || 'local' }}/soataskworkspace-frontend:${{ github.sha }}
-=======
-          context: ./frontend
+          context: ./frontend-react
           file: Dockerfile
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/soataskworkspace-frontend:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/soataskworkspace-frontend:${{ github.sha }}
->>>>>>> 773c4d7 (Remove Eureka Server and simplify Docker deployment)
