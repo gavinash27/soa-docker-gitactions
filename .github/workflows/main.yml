@@ -34,7 +34,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./backend
-          file: ./backend/backend.Dockerfile
+          file: ./backend/Dockerfile
           push: ${{ github.event_name == 'push' }}
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME || 'local' }}/soataskworkspace-backend:latest
@@ -54,7 +54,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./frontend/frontend-react
-          file: ./frontend/frontend-react/frontend.Dockerfile
+          file: ./frontend/frontend-react/Dockerfile
           push: ${{ github.event_name == 'push' }}
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME || 'local' }}/soataskworkspace-frontend:latest
