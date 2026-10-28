@@ -1,6 +1,6 @@
 # BusPass Management
 
-Spring Boot 4 / Java 21 backend, Eureka Server, React/Vite frontend, and PostgreSQL.
+Spring Boot 4 / Java 21 backend, React/Vite frontend, and PostgreSQL.
 
 ## Run locally with Docker Compose
 
@@ -13,7 +13,7 @@ docker compose up --build -d
 docker compose ps
 ```
 
-Compose builds all three application images from this checkout, so it does not need published images. The `postgres_data` named volume preserves database data when containers are stopped or recreated.
+Compose builds the backend and frontend images from this checkout, so it does not need published images. The `postgres_data` named volume preserves database data when containers are stopped or recreated.
 
 Stop the stack with `docker compose down`. This keeps the database volume. Do not add `-v` if you want to preserve the data.
 
@@ -24,7 +24,6 @@ Defaults from `.env.example`:
 - Frontend: <http://localhost:3001>
 - Backend API: <http://localhost:8082/BusPass/>
 - Swagger UI: <http://localhost:3001/swagger-ui/index.html> (also available at <http://localhost:8082/swagger-ui/index.html>)
-- Eureka dashboard: <http://localhost:8762>
 - PostgreSQL host port: `5433`
 
 The Nginx frontend proxies `/BusPass`, `/v3/api-docs`, and `/swagger-ui/` to the backend service. The Vite development proxy remains configured for `http://localhost:8081`.
@@ -33,16 +32,14 @@ The Nginx frontend proxies `/BusPass`, `/v3/api-docs`, and `/swagger-ui/` to the
 
 Images published by the workflow (replace `<dockerhub-username>` with the Docker Hub namespace):
 
-- `<dockerhub-username>/buspass-backend:latest` and `:<commit-sha>`
-- `<dockerhub-username>/buspass-eureka:latest` and `:<commit-sha>`
-- `<dockerhub-username>/buspass-frontend:latest` and `:<commit-sha>`
+- `<dockerhub-username>/soataskworkspace-backend:latest` and `:<commit-sha>`
+- `<dockerhub-username>/soataskworkspace-frontend:latest` and `:<commit-sha>`
 
-`.github/workflows/main.yml` builds and validates the Java services, frontend, Compose configuration, and all Docker images on pull requests to `main` and pushes to `main`. It publishes images only for pushes to `main`. Add repository Actions secrets named `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (a Docker Hub access token) to enable publishing. No credentials belong in `.env.example` or source control.
+`.github/workflows/main.yml` builds and validates the backend, frontend, Compose configuration, and both Docker images on pull requests to `main` and pushes to `main`. It publishes images only for pushes to `main`. Add repository Actions secrets named `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (a Docker Hub access token) to enable publishing. No credentials belong in `.env.example` or source control.
 
 ## Build without Docker
 
 ```powershell
 cd backend; .\mvnw.cmd -B verify; cd ..
-cd EurekaServer\EurekaServer; .\mvnw.cmd -B verify; cd ..\..
 cd frontend\frontend-react; npm ci; npm run build; cd ..\..
 ```

@@ -16,22 +16,8 @@ services:
       retries: 12
       start_period: 5s
 
-  eureka:
-    image: ${DOCKERHUB_USERNAME:-local}/buspass-eureka:latest
-    build:
-      context: ./EurekaServer/EurekaServer
-      dockerfile: Dockerfile
-    ports:
-      - "${EUREKA_HOST_PORT:-8762}:8761"
-    healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8761/actuator/health || curl -fsS http://localhost:8761/ >/dev/null"]
-      interval: 10s
-      timeout: 5s
-      retries: 12
-      start_period: 30s
-
   backend:
-    image: ${DOCKERHUB_USERNAME:-local}/buspass-backend:latest
+    image: ${DOCKERHUB_USERNAME:-local}/soataskworkspace-backend:latest
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -40,15 +26,10 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-dockertask}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-local-development-only}
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
-      EUREKA_INSTANCE_HOSTNAME: backend
-      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
     ports:
       - "${BACKEND_HOST_PORT:-8082}:8081"
     depends_on:
       postgres:
-        condition: service_healthy
-      eureka:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:8081/BusPass/ >/dev/null"]
@@ -58,7 +39,7 @@ services:
       start_period: 45s
 
   frontend:
-    image: ${DOCKERHUB_USERNAME:-local}/buspass-frontend:latest
+    image: ${DOCKERHUB_USERNAME:-local}/soataskworkspace-frontend:latest
     build:
       context: ./frontend
       dockerfile: Dockerfile
